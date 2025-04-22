@@ -1,0 +1,183 @@
+{% extends 'base.html' %} 
+{% block title %}Cart{% endblock title %}
+
+{% block content %}
+<div class="container">
+    <div class="border rounded p-4 m-4">
+        <p class="display-4 pl-4 ml-4">
+            My Cart
+        </p>
+        <hr>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>SN</th>
+                    <th>Image</th>
+                    <th>Product Name</th>
+                    <th>Qty</th>
+                    <th>Price</th>
+                    <th></th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+        
+            <tbody>
+                {% for cart in cart %}
+                <tr id="cart-item-{{ cart.product.id }}">
+                    <td>{{ forloop.counter }}</td>
+                    <td><img style="height:80px;"  src="{{ cart.product.image.url }}" alt=""></td>
+                    <td>{{ cart.product.name }}</td>
+                    <td>
+                        <input type="button" pid="{{ cart.product.id }}" class="minus-cart btn btn-primary" value="-">
+                            <span class="quantity" id="quantity-{{ cart.product.id }}">{{ cart.quantity }}</span>
+                        <input type="button" pid="{{ cart.product.id }}" class="btn btn-primary plus-cart"  value="+">
+                    </td>
+                    <td>Rs. {{ cart.product.price }}</td>
+                    <td><button class="btn btn-danger btn-sm remove-cart" data-pid="{{ cart.product.id }}">Delete</button></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% comment %} <h4>Total Price: <span id="total-price">Rs.{{cart.product.total_price}} </span></h4> {% endcomment %}
+
+        <hr>
+        <div class="m-3 p-3">
+            <!-- Trigger the Modal -->
+            <a href="#" data-bs-toggle="modal" data-bs-target="#exampleModal"  class="btn btn-outline-info border rounded col-lg-3 float-right">Check Out</a>
+        </div>
+    </div>
+</div>
+
+
+<!--checkout-->
+
+
+  
+  <!-- Modal -->
+  <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form action="/checkout" method="POST">
+            {% csrf_token %}
+            <div class="form-group mt-3">
+                <label for="">Name</label>
+                <input type="text" required  name="name" id="name" class="form-control" placeholder="Enter name">
+
+            </div>
+
+            <div class="form-group mt-3">
+                <label for="">Shipping Address</label>
+                <input type="text" required  name="address" id="address" class="form-control" placeholder="Enter your shipping Address">
+
+            </div>
+
+            <div class="form-group mt-3">
+                <label for="">Mobile No.</label>
+                <input type="text" required  name="mobile" id="mobile" class="form-control" placeholder="Enter your Mobile Number">
+
+            </div>
+
+            <input type="submit" class="btn btn-outline-info border rounded btn-block mt-1" value="Make Payment">
+
+          </form>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Bootstrap 5 JS (for modal functionality) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    {% comment %} $(.plus-cart).click (function(){
+    car id=$(this).attr("pid").toString();
+    $.ajax({
+        type : "GET",
+        url : "/plus_cart",
+        data  : {
+            prod_id :id
+        },
+        success:function(data){
+
+        }
+    })
+    }); {% endcomment %}
+jQuery(document).ready(function ($) {
+    $(".plus-cart").click(function () {
+        var id = $(this).attr("pid").toString();
+        $.ajax({
+            type: "GET",
+            url: "/plus_cart",
+            data: { prod_id: id },
+            success: function (data) {
+                $("#quantity-" + id).text(data.quantity);
+            },
+            error: function () {
+                alert("Error updating cart.");
+            }
+        });
+    });
+});
+
+jQuery(document).ready(function ($) {
+    $(".minus-cart").click(function () {
+        var id = $(this).attr("pid").toString();
+        var quantitySpan = $("#quantity-" + id);
+        var totalPriceSpan = $("#total-price");
+
+        $.ajax({
+            type: "GET",
+            url: "/minus_cart",
+            data: { prod_id: id },
+            success: function (data) {
+                if (data.quantity !== undefined) {
+                    quantitySpan.text(data.quantity);
+                    totalPriceSpan.text("Rs. " + data.total_price);
+                }
+            },
+            error: function () {
+                alert("Error updating cart.");
+            }
+        });
+    });
+});
+
+
+jQuery(document).ready(function ($) {
+
+$(".remove-cart").click(function () {
+    var id = $(this).attr("data-pid").toString();
+    var cartRow = $("#cart-item-" + id);
+    var totalPriceSpan = $("#total-price");
+
+    $.ajax({
+        type: "GET",
+        url: "/remove_cart",
+        data: {
+            prod_id: id
+        },
+        success: function (data) {
+            cartRow.fadeOut(500, function () {
+                $(this).remove();
+            }); // Remove row
+            totalPriceSpan.text("Rs. " + data.total_price); // Update total price
+        },
+        error: function () {
+            alert("Error removing item.");
+        }
+    });
+});
+});
+</script>
+
+
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends 'base.html'%}
+{% load static %}
+{% block title %}Cart{% endblock title %}
+{%block content%}
+
+<div class="container my-5">
+    <div class="row">
+        <h3 class="text-center">You have no Product in Cart</h3>
+        <img src="{% static 'image/empty.webp' %}" class="img-fluid img-thumbnil w-25" alt="">
+
+    </div>
+
+</div>
+
+
+{%endblock%}
